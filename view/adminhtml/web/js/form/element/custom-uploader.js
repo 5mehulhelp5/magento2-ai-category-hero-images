@@ -105,7 +105,7 @@ define([
             $.ajax({
                 url: self.generateUrl,
                 type: 'POST',
-                data: { prompt: prompt },
+                data: { prompt: prompt, category_id: this.categoryId },
                 success: function (response) {
                     if (response.success && response.image) {
                         self.addGeneratedImage(response.image);

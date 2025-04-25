@@ -42,6 +42,8 @@ class Generator extends Action implements HttpPostActionInterface
         $resultJson = $this->resultJsonFactory->create();
 
         $prompt = $this->getRequest()->getParam('prompt');
+        $categoryId = $this->getRequest()->getParam('category_id');
+        $numProducts = $this->getRequest()->getParam('num_poducts') ?? 3;
 
         if (!$prompt) {
             return $resultJson->setData([
@@ -50,8 +52,19 @@ class Generator extends Action implements HttpPostActionInterface
             ]);
         }
 
+        if (!$categoryId) {
+            return $resultJson->setData([
+                'success' => false,
+                'message' => __('No category ID provided.')
+            ]);
+        }
+
         try {
-            $image = $this->imageGenerator->generateImage($prompt);
+            $products = $this->categoryImageManager->getRandomProductsFromCategory((int) $categoryId, $numProducts);
+            $productImages = $this->categoryImageManager->getProductImagePaths($products, $numProducts);
+            $category = $this->categoryImageManager->getCategory((int) $categoryId);
+            $prompt = $this->categoryImageManager->generatePrompt($products, $category);
+            $image = $this->imageGenerator->generateImage($prompt, $productImages);
             $imageData = $this->categoryImageManager->saveCategoryImage($image);
 
             if ($imageData) {

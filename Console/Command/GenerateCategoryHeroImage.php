@@ -97,7 +97,7 @@ class GenerateCategoryHeroImage extends Command
 
             // Get random products from category
             $output->writeln("<info>Selecting {$numProducts} random products from the category...</info>");
-            $products = $this->categoryImageManager->getRandomProductsFromCategory($categoryId, $numProducts);
+            $products = $this->categoryImageManager->getRandomProductsFromCategory((int) $categoryId, $numProducts);
 
             if ($products->count() === 0) {
                 $output->writeln("<e>No products with images found in this category.</e>");

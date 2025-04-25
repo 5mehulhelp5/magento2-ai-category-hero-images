@@ -36,14 +36,14 @@ class ImageGenerator
                 return null;
             }
 
+            $base64Image = null;
+
             // If we have image files, use the edit endpoint
             if (!empty($imageFiles)) {
                 $this->logger->info('Generating image with text prompt and ' . count($imageFiles) . ' product images');
 
                 // Prepare the image files for the API
                 $images = $this->prepareImageFiles($imageFiles);
-
-                $base64Image = null;
 
                 // Check if we have valid image resources
                 if (empty($images)) {
