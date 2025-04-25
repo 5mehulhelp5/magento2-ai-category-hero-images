@@ -16,6 +16,7 @@ This Magento 2 extension generates AI-powered hero images for categories using O
 - Magento 2.4.x
 - PHP 8.1 or higher
 - OpenAI API key
+- A [verified organization](https://help.openai.com/en/articles/10910291-api-organization-verification) (after verification it takes about 30 minutes for existing keys to reflect the change)
 
 ## Installation
 
