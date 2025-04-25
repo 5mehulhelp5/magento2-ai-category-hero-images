@@ -16,6 +16,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Directory\WriteInterface;
 use Magento\Framework\Math\Random;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 class CategoryImageManager
@@ -30,7 +31,8 @@ class CategoryImageManager
         private readonly ImageGenerator $imageGenerator,
         private readonly Filesystem $filesystem,
         private readonly Random $random,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly StoreManagerInterface $storeManager,
     ) {
         try {
             $this->mediaDirectory = $this->filesystem->getDirectoryWrite(DirectoryList::MEDIA);
@@ -127,7 +129,6 @@ class CategoryImageManager
      */
     public function generatePrompt(ProductCollection $products, CategoryInterface $category): string
     {
-        $categoryName = $category->getName();
         $productNames = [];
 
         foreach ($products as $product) {
@@ -149,10 +150,10 @@ class CategoryImageManager
      * Save the generated image and set it as the category image
      *
      * @param string $base64Image
-     * @param CategoryInterface $category
-     * @return bool
+     * @param null|CategoryInterface $category
+     * @return null|array
      */
-    public function saveCategoryImage(string $base64Image, CategoryInterface $category): bool
+    public function saveCategoryImage(string $base64Image, ?CategoryInterface $category = null): ?array
     {
         try {
             $imageData = base64_decode($base64Image);
@@ -161,16 +162,48 @@ class CategoryImageManager
 
             $this->mediaDirectory->writeFile($filePath, $imageData);
 
-            /** @var Category $category */
-            $category->setImage($fileName);
-            $this->categoryRepository->save($category);
+            if ($category) {
+                /** @var Category $category */
+                $category->setImage($fileName);
+                $this->categoryRepository->save($category);
+            }
 
-            return true;
+            $mediaBaseUrl = $this->getMediaBaseUrl();
+            $absolutePath = $this->mediaDirectory->getAbsolutePath($filePath);
+
+            return [
+                [
+                    'name' => $fileName,
+                    'url'  => $mediaBaseUrl . self::CATEGORY_IMAGE_PATH . $fileName,
+                    'size' => filesize($absolutePath),
+                    'previewType' => 'image',
+                    'previewHeight' => 1024, //todo - change image size
+                    'previewWidth' => 1024, //todo - change image size
+                    'type' => 'image/png'
+                ]
+            ];
         } catch (Exception $e) {
             $this->logger->error('Error saving category image: ' . $e->getMessage(), [
                 'exception' => $e
             ]);
-            return false;
+            return null;
+        }
+    }
+
+    /**
+     * Get base media URL (web accessible)
+     *
+     * @return string
+     */
+    private function getMediaBaseUrl(): string
+    {
+        try {
+            return $this->storeManager
+                ->getStore()
+                ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+        } catch (\Exception $e) {
+            $this->logger->error('Error getting media base URL: ' . $e->getMessage());
+            return '';
         }
     }
 }

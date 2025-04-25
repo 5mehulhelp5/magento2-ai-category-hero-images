@@ -18,7 +18,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class GenerateCategoryHeroImage extends Command
 {
+    /** @var string */
     private const CATEGORY_ID_ARGUMENT = 'category_id';
+
+    /** @var string */
     private const NUM_PRODUCTS_OPTION = 'num-products';
 
     public function __construct(
