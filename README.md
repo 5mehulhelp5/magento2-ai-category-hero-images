@@ -4,7 +4,8 @@ This Magento 2 extension generates AI-powered hero images for categories using O
 
 ## Features
 
-- Console command to generate AI hero images for categories
+- Button "Generate with AI" in the admin when on the Category edit page
+- Console command to generate AI hero images in bulk for categories
 - Selects random products from a category and uses their information to generate a prompt
 - Enhances the prompt based on product information
 - Uses OpenAI's GPT-Image-1 model to create a visually appealing hero image
@@ -20,27 +21,14 @@ This Magento 2 extension generates AI-powered hero images for categories using O
 
 ## Installation
 
-### Manual Installation
-
-1. Create the following directory structure in your Magento installation: `app/code/Elgentos/AiCategoryHeroImages`
-2. Copy all files from this repository to the directory you created
-3. Run the following commands:
-
-```bash
-bin/magento module:enable Elgentos_AiCategoryHeroImages
-bin/magento setup:upgrade
-bin/magento setup:di:compile
-bin/magento cache:clean
-```
-
 ### Composer Installation
 
+1. `composer require elgentos/magento2-ai-category-hero-images`
+1. Run the following commands:
+
 ```bash
-composer require elgentos/module-ai-category-hero-images
 bin/magento module:enable Elgentos_AiCategoryHeroImages
 bin/magento setup:upgrade
-bin/magento setup:di:compile
-bin/magento cache:clean
 ```
 
 ## Configuration
@@ -52,7 +40,9 @@ bin/magento cache:clean
 
 ## Usage
 
-Run the following command to generate a hero image for a category:
+Open a category and click the "Generate with AI" button, followed by optionally adapting the prompt to your liking.
+
+Or run the following command to generate a hero image for a category:
 
 ```bash
 bin/magento elgentos:aicategoryhero:generate [category_id]
@@ -68,16 +58,11 @@ bin/magento elgentos:aicategoryhero:generate 4 --num-products=5
 
 ## How It Works
 
-1. The command selects random products from the specified category
-2. It generates a prompt based on the category name and product information
-3. It enhances the prompt with information about the products
-4. The enhanced prompt is sent to OpenAI's GPT-Image-1 model using a direct cURL request
-5. The generated image is saved to the Magento media directory
-6. The image is set as the category image
-
-## Technical Notes
-
-This module uses a direct cURL implementation to communicate with the OpenAI API instead of the OpenAI PHP client library. This approach was chosen to avoid RFC 7230 header compatibility issues that were encountered with the client library.
+1. The extension selects random products from the specified category
+1. It generates a prompt based on the category name and product information
+1. The enhanced prompt is sent to OpenAI's GPT-Image-1 model using a direct cURL request
+1. The generated image is saved to the Magento media directory
+1. The image is set as the category image
 
 ## License
 
