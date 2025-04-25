@@ -42,7 +42,7 @@ class Config extends Action implements HttpPostActionInterface
         $categoryId = (int) $this->_request->getParam('category_id');
 
         try {
-            $products = $this->categoryImageManager->getRandomProductsFromCategory(((int) $categoryId, 5);
+            $products = $this->categoryImageManager->getRandomProductsFromCategory((int) $categoryId, 5);
 
             return $resultJson->setData([
                 'success'        => true,
