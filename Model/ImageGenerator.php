@@ -96,8 +96,15 @@ class ImageGenerator
             foreach ($imageFiles as $imagePath) {
                 if (file_exists($imagePath)) {
                     try {
-                        // Instead of CURLFile, pass the file path directly
-                        $images[] = new \CURLFile($imagePath, mime_content_type($imagePath), basename($imagePath));
+                        // Open the image as a file resource
+                        $fileResource = fopen($imagePath, 'r');
+                        if ($fileResource === false) {
+                            throw new Exception("Failed to open image file: $imagePath");
+                        }
+
+                        // Add the image as a file resource (not as a CURLFile)
+                        $images[] = $fileResource;
+
                     } catch (Exception $e) {
                         $this->logger->warning('Error processing image file: ' . $e->getMessage(),
                             [
