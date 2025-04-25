@@ -96,9 +96,8 @@ class ImageGenerator
             foreach ($imageFiles as $imagePath) {
                 if (file_exists($imagePath)) {
                     try {
-                        // Create a CURLFile object which is what the OpenAI PHP client expects
-                        $images[] = new \CURLFile($imagePath, 'image/png',
-                            basename($imagePath));
+                        // Instead of CURLFile, pass the file path directly
+                        $images[] = new \CURLFile($imagePath, mime_content_type($imagePath), basename($imagePath));
                     } catch (Exception $e) {
                         $this->logger->warning('Error processing image file: ' . $e->getMessage(),
                             [
