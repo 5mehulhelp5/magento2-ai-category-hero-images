@@ -43,62 +43,33 @@ class ImageGenerator
                 // Prepare the image files for the API
                 $images = $this->prepareImageFiles($imageFiles);
 
+                $base64Image = null;
+
                 // Check if we have valid image resources
                 if (empty($images)) {
-                    $this->logger->warning('No valid image resources found. Falling back to text-only prompt.');
-
-                    // Use the create endpoint for text-only prompts
-                    $result = $client->images()->create([
-                        'model' => 'gpt-image-1',
-                        'prompt' => $prompt,
-                        'size' => '1024x1024',
-                        'quality' => 'high',
-                        'n' => 1,
-                    ]);
-
-                    $base64Image = $result->data[0]->b64_json;
+                    $this->logger->error('Error generating image - empty images variable');
                 } else {
                     try {
                         // Use the first image (we're only getting one in prepareImageFiles now)
                         $result = $client->images()->edit([
                             'model' => 'gpt-image-1',
-                            'image' => $images[0], // Use the CURLFile object
-                            'prompt' => $prompt . ' The image should incorporate elements from ' . (count($imageFiles) - 1) . ' other product images.',
+                            'image' => $images,
+                            'prompt' => $prompt,
                             'size' => '1024x1024',
                             'quality' => 'high',
+                            //'response_format' => 'url',
                             'n' => 1,
                         ]);
 
                         $base64Image = $result->data[0]->b64_json;
                     } catch (Exception $e) {
-                        $this->logger->error('Error in image edit: ' . $e->getMessage(), [
+                        $this->logger->error('Error generating image: ' . $e->getMessage(), [
                             'exception' => $e
                         ]);
-                        // Fall back to text-only generation
-                        $result = $client->images()->create([
-                            'model' => 'gpt-image-1',
-                            'prompt' => $prompt . ' The image should incorporate elements from ' . count($imageFiles) . ' product images.',
-                            'size' => '1024x1024',
-                            'quality' => 'high',
-                            'n' => 1,
-                        ]);
-
-                        $base64Image = $result->data[0]->b64_json;
                     }
                 }
             } else {
-                $this->logger->info('Generating image with text prompt only');
-
-                // Use the create endpoint for text-only prompts
-                $result = $client->images()->create([
-                    'model' => 'gpt-image-1',
-                    'prompt' => $prompt,
-                    'size' => '1024x1024',
-                    'quality' => 'high',
-                    'n' => 1,
-                ]);
-
-                $base64Image = $result->data[0]->b64_json;
+                $this->logger->error('Error generating image - empty imageFiles variable');
             }
 
             return $base64Image;
@@ -106,30 +77,6 @@ class ImageGenerator
             $this->logger->error('Error generating image: ' . $e->getMessage(), [
                 'exception' => $e
             ]);
-
-            // No need to close file resources as we're using CURLFile objects now
-
-            // If the error is related to the image_inputs parameter or MultipartStreamBuilder, try again with text-only
-            if ((strpos($e->getMessage(), 'unknown parameter') !== false ||
-                strpos($e->getMessage(), 'MultipartStreamBuilder') !== false) &&
-                !empty($imageFiles)) {
-                $this->logger->info('Retrying with text-only prompt due to API parameter error');
-                try {
-                    $result = $client->images()->create([
-                        'model' => 'gpt-image-1',
-                        'prompt' => $prompt . ' The image should incorporate elements from ' . count($imageFiles) . ' product images.',
-                        'size' => '1024x1024',
-                        'quality' => 'high',
-                        'n' => 1,
-                    ]);
-
-                    return $result->data[0]->b64_json;
-                } catch (Exception $retryException) {
-                    $this->logger->error('Error in retry attempt: ' . $retryException->getMessage(), [
-                        'exception' => $retryException
-                    ]);
-                }
-            }
 
             return null;
         }
@@ -145,23 +92,23 @@ class ImageGenerator
     {
         $images = [];
 
-        // If we have multiple images, just use the first one for now
-        // This is a temporary solution until we can properly handle multiple images
         if (count($imageFiles) > 0) {
-            $imagePath = $imageFiles[0];
-
-            if (file_exists($imagePath)) {
-                try {
-                    // Create a CURLFile object which is what the OpenAI PHP client expects
-                    $images[] = new \CURLFile($imagePath, 'image/png', basename($imagePath));
-                } catch (Exception $e) {
-                    $this->logger->warning('Error processing image file: ' . $e->getMessage(), [
-                        'exception' => $e,
-                        'file' => $imagePath
-                    ]);
+            foreach ($imageFiles as $imagePath) {
+                if (file_exists($imagePath)) {
+                    try {
+                        // Create a CURLFile object which is what the OpenAI PHP client expects
+                        $images[] = new \CURLFile($imagePath, 'image/png',
+                            basename($imagePath));
+                    } catch (Exception $e) {
+                        $this->logger->warning('Error processing image file: ' . $e->getMessage(),
+                            [
+                                'exception' => $e,
+                                'file' => $imagePath
+                            ]);
+                    }
+                } else {
+                    $this->logger->warning('Image file does not exist: ' . $imagePath);
                 }
-            } else {
-                $this->logger->warning('Image file does not exist: ' . $imagePath);
             }
         }
 

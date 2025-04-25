@@ -137,11 +137,8 @@ class CategoryImageManager
 
         $productList = implode(", ", $productNames);
 
-        $prompt = "Create a professional, high-quality hero image for an e-commerce category page. " .
-                  "Use the provided product images as reference and incorporate them into the design. " .
-                  "The products shown are: {$productList}. " .
-                  "The image should be visually appealing, with a clean layout, and suitable for an e-commerce website. " .
-                  "Use a style that highlights the products in an artistic way. DO NOT ADD ANY TEXT OR LABELS.";
+        $prompt = "Generate a photorealistic hero image for an e-commerce category page. Use the reference pictures and combine them into one photo with a clean backdrop. Make sure you contain all the items in the reference pictures, without altering what they look like.
+Do not add any text or labels in any way, but keep the text that is in the reference pictures exactly as is.";
 
         return $prompt;
     }
