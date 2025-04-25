@@ -1,0 +1,22 @@
+{
+    "name": "elgentos/magento2-ai-category-hero-images",
+    "description": "Generate AI-powered hero images for categories using OpenAI",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "OSL-3.0"
+    ],
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": "*",
+        "openai-php/client": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Elgentos\\AiCategoryHeroImages\\": ""
+        }
+    }
+}
